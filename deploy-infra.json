@@ -1,0 +1,263 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Metadata:
+    Generator: "former2"
+Description: ""
+Resources:
+    EKSCluster:
+        Type: "AWS::EKS::Cluster"
+        Properties:
+            Name: "lakeSideMutual"
+            RoleArn: !Sub "arn:aws:iam::${AWS::AccountId}:role/eksctl-lakeSideMutual-cluster-ServiceRole-RvtGRCl4xeQ2"
+            Version: "1.29"
+            ResourcesVpcConfig: 
+                SecurityGroupIds: 
+                  - "sg-03fdc8fd560ae250c"
+                SubnetIds: 
+                  - "subnet-0e70368b644d04361"
+                  - "subnet-04578d5442f7d4b8f"
+                  - "subnet-0fa30b987f61cc7db"
+                  - "subnet-0b72624849ae000a0"
+                  - "subnet-07b38eb92d02bf456"
+                  - "subnet-0e91255d8c3cada6c"
+            KubernetesNetworkConfig: 
+                ServiceIpv4Cidr: "10.100.0.0/16"
+
+    ECRRepository:
+        Type: "AWS::ECR::Repository"
+        Properties:
+            RepositoryName: "lakeside"
+            LifecyclePolicy: 
+                RegistryId: !Ref AWS::AccountId
+
+    RDSDBInstance:
+        Type: "AWS::RDS::DBInstance"
+        Properties:
+            DBInstanceIdentifier: "customer-core-db"
+            AllocatedStorage: 20
+            DBInstanceClass: "db.t3.micro"
+            Engine: "mysql"
+            MasterUsername: "admin"
+            MasterUserPassword: "REPLACEME"
+            PreferredBackupWindow: "21:45-22:15"
+            BackupRetentionPeriod: 1
+            AvailabilityZone: !GetAtt EC2Instance2.AvailabilityZone
+            PreferredMaintenanceWindow: "mon:21:14-mon:21:44"
+            MultiAZ: false
+            EngineVersion: "8.0.35"
+            AutoMinorVersionUpgrade: true
+            LicenseModel: "general-public-license"
+            PubliclyAccessible: true
+            StorageType: "gp2"
+            Port: 3306
+            StorageEncrypted: false
+            CopyTagsToSnapshot: false
+            MonitoringInterval: 0
+            EnableIAMDatabaseAuthentication: false
+            EnablePerformanceInsights: false
+            DeletionProtection: false
+            DBSubnetGroupName: "default"
+            VPCSecurityGroups: 
+              - "sg-025ad4831acc73d99"
+            DBParameterGroupName: "default.mysql8.0"
+            OptionGroupName: "default:mysql-8-0"
+            CACertificateIdentifier: "rds-ca-rsa2048-g1"
+            Tags: 
+              - 
+                Key: "Name"
+                Value: "CustomerCoreDB"
+
+    EC2VPC:
+        Type: "AWS::EC2::VPC"
+        Properties:
+            CidrBlock: "192.168.0.0/16"
+            EnableDnsSupport: true
+            EnableDnsHostnames: true
+            InstanceTenancy: "default"
+            Tags: 
+              - 
+                Key: "alpha.eksctl.io/eksctl-version"
+                Value: "0.175.0-dev+0.175.0.19700101-00:00:00"
+              - 
+                Key: "alpha.eksctl.io/cluster-name"
+                Value: "lakeSideMutual"
+              - 
+                Key: "Name"
+                Value: "eksctl-lakeSideMutual-cluster/VPC"
+              - 
+                Key: "alpha.eksctl.io/cluster-oidc-enabled"
+                Value: "false"
+              - 
+                Key: "eksctl.cluster.k8s.io/v1alpha1/cluster-name"
+                Value: "lakeSideMutual"
+
+    EC2Instance:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            ImageId: "ami-0c1ba88d1450207b5"
+            InstanceType: "t3.medium"
+            AvailabilityZone: !Sub "${AWS::Region}b"
+            Tenancy: "default"
+            SubnetId: "subnet-04578d5442f7d4b8f"
+            EbsOptimized: false
+            SecurityGroupIds: 
+              - "sg-057c9231ecf7cdfaf"
+              - "sg-057c9231ecf7cdfaf"
+            SourceDestCheck: true
+            BlockDeviceMappings: 
+              - 
+                DeviceName: "/dev/xvda"
+                Ebs: 
+                    Encrypted: false
+                    VolumeSize: 80
+                    SnapshotId: "snap-0c2e1a0b8bcd7a139"
+                    VolumeType: "gp3"
+                    DeleteOnTermination: true
+            UserData: "TUlNRS1WZXJzaW9uOiAxLjAKQ29udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSIvLyIKCi0tLy8KQ29udGVudC1UeXBlOiB0ZXh0L3gtc2hlbGxzY3JpcHQ7IGNoYXJzZXQ9InVzLWFzY2lpIgojIS9iaW4vYmFzaApzZXQgLWV4CkI2NF9DTFVTVEVSX0NBPUxTMHRMUzFDUlVkSlRpQkRSVkpVU1VaSlEwRlVSUzB0TFMwdENrMUpTVVJDVkVORFFXVXlaMEYzU1VKQlowbEpURVJRWlRNeFMzTnliRkYzUkZGWlNrdHZXa2xvZG1OT1FWRkZURUpSUVhkR1ZFVlVUVUpGUjBFeFZVVUtRWGhOUzJFelZtbGFXRXAxV2xoU2JHTjZRV1ZHZHpCNVRrUkJNRTFxUVhoT1JGRjRUVVJrWVVaM01IcE9SRUV3VFZSbmVFNUVVVEpOUkdSaFRVSlZlQXBGZWtGU1FtZE9Wa0pCVFZSRGJYUXhXVzFXZVdKdFZqQmFXRTEzWjJkRmFVMUJNRWREVTNGSFUwbGlNMFJSUlVKQlVWVkJRVFJKUWtSM1FYZG5aMFZMQ2tGdlNVSkJVVVJ3WjJ0emIyOU1WSGRUTVc1ek4zTlZRMDEzYTFSRWNVWktVVTU0TWt0SlRUSjBRa05YTld0TWVXdGlVR0ZpV1UxblpGVnNZbXhDTW5vS1ZFTk9URkJoT1c5VmQzZFBhR1V6T1UxQlJuVXlkelprYjJ4MmVUSlVOV3RvVlVOUFowMHZVRzQ0VFRsYVdGQTVPWFJETVZwTVRIazNNakZhUTJwRU1ncGFVMUJEY0hoSlNtUnVUMGw1Tkd0aWNXbDBaMmh4VFc1TVRXVk5iV2N3TlROTlZVMXdWMHBwVVhKUk4zTXlSVlJLTmxaWVZHSnFlWEpPVGxKelMyc3pDbXBIUjJaSmVEZHRjRU12TkRsd1JqZGpNek5wVERKdFVrUnFNREJ3S3pOTVozQlhjamxDVWxCamQwSlZWRFE0T0dOclZWaFBaWEY1Y2toMU1rVndLMWdLZVdGU09XOWplaTlYVTFOM2Ewa3hVek5WY2xOSFpFRTBhbEJsVWtoa1ZERnBOM1ZvWVRkTVppOW1NeTlYYkRCNVQwWjJWRGhGZWs1cWVVbHlkRkJMYkFwRE1HMXZVelZsT0d4ek1DdHNhRXRYVTFaQ1prOU5kMlJVVVZOMFFXZE5Ra0ZCUjJwWFZFSllUVUUwUjBFeFZXUkVkMFZDTDNkUlJVRjNTVU53UkVGUUNrSm5UbFpJVWsxQ1FXWTRSVUpVUVVSQlVVZ3ZUVUl3UjBFeFZXUkVaMUZYUWtKU2VqVnNPVE5hZWpOR2FIaGhUa2hsTjJ4RFlqSjJkVlp6VEVONlFWWUtRbWRPVmtoU1JVVkVha0ZOWjJkd2NtUlhTbXhqYlRWc1pFZFdlazFCTUVkRFUzRkhVMGxpTTBSUlJVSkRkMVZCUVRSSlFrRlJRVEZRUTBwQk5VZExXZ3B1YkdOTlJ6YzNkR0prTUdWclowZzVUREZaTTA1NEt6ZFdiVXB1YWtOWU4ydGlSbmxvU0VGRVRWaFNkVFp0VUdwblVXaENaWE5rYzJKUldHeG1WVTVSQ2xSS2JETjRkVTlzUjFsUVIwUkRUVFp3U1VGcVRrVjRTbUZPVjBoWWJrMVdWblJLTDFaaFMxUXdOM0JGTW5wdWRHeDVZVFJrTVhsYWNrTk5kMVJpUVVZS1dYRlRTbGRFZW1GMk9IY3ZORkpaTUhSelVFY3lWbGgzWm01eGNHVk9XRFl2U0RaWVMzUk9aR0kxZURrdk1WcHZRM2ROTURacFpXaHZhMEo0VjBSa05ncHlUVVJwT1dSa2FWTnRWalIxUm1oRFpqYzVhMGRVWm14SlJuZDFOMWxPV21OSWVuTTNRMnczUm00NVltWjVhV2h6WjJacmFrdDFMekpxTVdZcldGQXhDbEozT1RWR2JVSlNhbTkzTWk4Mk9UaHdZbGRFUjBaTVJ6QlpRV3h0TlV4cU1qTTVhbUpXZEV4MGNtNXBSSGxhVWt0NVZ6VkVaekZ1VEc5aVNtMXJNblVLVG5saVdVMVBPWFZSZVRsa0NpMHRMUzB0UlU1RUlFTkZVbFJKUmtsRFFWUkZMUzB0TFMwSwpBUElfU0VSVkVSX1VSTD1odHRwczovLzMwNDQyQjdGMzJENEU4RDY0RTU5MkNFRUZCOEJGQzA5LmdyNy5ldS1jZW50cmFsLTEuZWtzLmFtYXpvbmF3cy5jb20KSzhTX0NMVVNURVJfRE5TX0lQPTEwLjEwMC4wLjEwCi9ldGMvZWtzL2Jvb3RzdHJhcC5zaCBsYWtlU2lkZU11dHVhbCAtLWt1YmVsZXQtZXh0cmEtYXJncyAnLS1ub2RlLWxhYmVscz1la3MuYW1hem9uYXdzLmNvbS9zb3VyY2VMYXVuY2hUZW1wbGF0ZVZlcnNpb249MSxhbHBoYS5la3NjdGwuaW8vY2x1c3Rlci1uYW1lPWxha2VTaWRlTXV0dWFsLGFscGhhLmVrc2N0bC5pby9ub2RlZ3JvdXAtbmFtZT1zdGFuZGFyZC13b3JrZXJzLGVrcy5hbWF6b25hd3MuY29tL25vZGVncm91cC1pbWFnZT1hbWktMGMxYmE4OGQxNDUwMjA3YjUsZWtzLmFtYXpvbmF3cy5jb20vY2FwYWNpdHlUeXBlPU9OX0RFTUFORCxla3MuYW1hem9uYXdzLmNvbS9ub2RlZ3JvdXA9c3RhbmRhcmQtd29ya2Vycyxla3MuYW1hem9uYXdzLmNvbS9zb3VyY2VMYXVuY2hUZW1wbGF0ZUlkPWx0LTAxOGNiMTUzZDVhNzRlYmUwIC0tbWF4LXBvZHM9MTcnIC0tYjY0LWNsdXN0ZXItY2EgJEI2NF9DTFVTVEVSX0NBIC0tYXBpc2VydmVyLWVuZHBvaW50ICRBUElfU0VSVkVSX1VSTCAtLWRucy1jbHVzdGVyLWlwICRLOFNfQ0xVU1RFUl9ETlNfSVAgLS11c2UtbWF4LXBvZHMgZmFsc2UKCi0tLy8tLQ=="
+            IamInstanceProfile: "eks-1ec77dff-3d0a-fb46-050b-c4e144157658"
+            Tags: 
+              - 
+                Key: "Name"
+                Value: "lakeSideMutual-standard-workers-Node"
+              - 
+                Key: "eks:nodegroup-name"
+                Value: "standard-workers"
+              - 
+                Key: "alpha.eksctl.io/nodegroup-name"
+                Value: "standard-workers"
+              - 
+                Key: "kubernetes.io/cluster/lakeSideMutual"
+                Value: "owned"
+              - 
+                Key: "k8s.io/cluster-autoscaler/lakeSideMutual"
+                Value: "owned"
+              - 
+                Key: "alpha.eksctl.io/nodegroup-type"
+                Value: "managed"
+              - 
+                Key: "k8s.io/cluster-autoscaler/enabled"
+                Value: "true"
+              - 
+                Key: "eks:cluster-name"
+                Value: "lakeSideMutual"
+            HibernationOptions: 
+                Configured: false
+            CpuOptions: 
+                CoreCount: 1
+                ThreadsPerCore: 2
+            EnclaveOptions: 
+                Enabled: false
+
+    EC2Instance2:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            ImageId: "ami-0c1ba88d1450207b5"
+            InstanceType: "t3.medium"
+            AvailabilityZone: !Sub "${AWS::Region}c"
+            Tenancy: "default"
+            SubnetId: "subnet-0e70368b644d04361"
+            EbsOptimized: false
+            SecurityGroupIds: 
+              - "sg-057c9231ecf7cdfaf"
+              - "sg-057c9231ecf7cdfaf"
+            SourceDestCheck: true
+            BlockDeviceMappings: 
+              - 
+                DeviceName: "/dev/xvda"
+                Ebs: 
+                    Encrypted: false
+                    VolumeSize: 80
+                    SnapshotId: "snap-0c2e1a0b8bcd7a139"
+                    VolumeType: "gp3"
+                    DeleteOnTermination: true
+            UserData: "TUlNRS1WZXJzaW9uOiAxLjAKQ29udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSIvLyIKCi0tLy8KQ29udGVudC1UeXBlOiB0ZXh0L3gtc2hlbGxzY3JpcHQ7IGNoYXJzZXQ9InVzLWFzY2lpIgojIS9iaW4vYmFzaApzZXQgLWV4CkI2NF9DTFVTVEVSX0NBPUxTMHRMUzFDUlVkSlRpQkRSVkpVU1VaSlEwRlVSUzB0TFMwdENrMUpTVVJDVkVORFFXVXlaMEYzU1VKQlowbEpURVJRWlRNeFMzTnliRkYzUkZGWlNrdHZXa2xvZG1OT1FWRkZURUpSUVhkR1ZFVlVUVUpGUjBFeFZVVUtRWGhOUzJFelZtbGFXRXAxV2xoU2JHTjZRV1ZHZHpCNVRrUkJNRTFxUVhoT1JGRjRUVVJrWVVaM01IcE9SRUV3VFZSbmVFNUVVVEpOUkdSaFRVSlZlQXBGZWtGU1FtZE9Wa0pCVFZSRGJYUXhXVzFXZVdKdFZqQmFXRTEzWjJkRmFVMUJNRWREVTNGSFUwbGlNMFJSUlVKQlVWVkJRVFJKUWtSM1FYZG5aMFZMQ2tGdlNVSkJVVVJ3WjJ0emIyOU1WSGRUTVc1ek4zTlZRMDEzYTFSRWNVWktVVTU0TWt0SlRUSjBRa05YTld0TWVXdGlVR0ZpV1UxblpGVnNZbXhDTW5vS1ZFTk9URkJoT1c5VmQzZFBhR1V6T1UxQlJuVXlkelprYjJ4MmVUSlVOV3RvVlVOUFowMHZVRzQ0VFRsYVdGQTVPWFJETVZwTVRIazNNakZhUTJwRU1ncGFVMUJEY0hoSlNtUnVUMGw1Tkd0aWNXbDBaMmh4VFc1TVRXVk5iV2N3TlROTlZVMXdWMHBwVVhKUk4zTXlSVlJLTmxaWVZHSnFlWEpPVGxKelMyc3pDbXBIUjJaSmVEZHRjRU12TkRsd1JqZGpNek5wVERKdFVrUnFNREJ3S3pOTVozQlhjamxDVWxCamQwSlZWRFE0T0dOclZWaFBaWEY1Y2toMU1rVndLMWdLZVdGU09XOWplaTlYVTFOM2Ewa3hVek5WY2xOSFpFRTBhbEJsVWtoa1ZERnBOM1ZvWVRkTVppOW1NeTlYYkRCNVQwWjJWRGhGZWs1cWVVbHlkRkJMYkFwRE1HMXZVelZsT0d4ek1DdHNhRXRYVTFaQ1prOU5kMlJVVVZOMFFXZE5Ra0ZCUjJwWFZFSllUVUUwUjBFeFZXUkVkMFZDTDNkUlJVRjNTVU53UkVGUUNrSm5UbFpJVWsxQ1FXWTRSVUpVUVVSQlVVZ3ZUVUl3UjBFeFZXUkVaMUZYUWtKU2VqVnNPVE5hZWpOR2FIaGhUa2hsTjJ4RFlqSjJkVlp6VEVONlFWWUtRbWRPVmtoU1JVVkVha0ZOWjJkd2NtUlhTbXhqYlRWc1pFZFdlazFCTUVkRFUzRkhVMGxpTTBSUlJVSkRkMVZCUVRSSlFrRlJRVEZRUTBwQk5VZExXZ3B1YkdOTlJ6YzNkR0prTUdWclowZzVUREZaTTA1NEt6ZFdiVXB1YWtOWU4ydGlSbmxvU0VGRVRWaFNkVFp0VUdwblVXaENaWE5rYzJKUldHeG1WVTVSQ2xSS2JETjRkVTlzUjFsUVIwUkRUVFp3U1VGcVRrVjRTbUZPVjBoWWJrMVdWblJLTDFaaFMxUXdOM0JGTW5wdWRHeDVZVFJrTVhsYWNrTk5kMVJpUVVZS1dYRlRTbGRFZW1GMk9IY3ZORkpaTUhSelVFY3lWbGgzWm01eGNHVk9XRFl2U0RaWVMzUk9aR0kxZURrdk1WcHZRM2ROTURacFpXaHZhMEo0VjBSa05ncHlUVVJwT1dSa2FWTnRWalIxUm1oRFpqYzVhMGRVWm14SlJuZDFOMWxPV21OSWVuTTNRMnczUm00NVltWjVhV2h6WjJacmFrdDFMekpxTVdZcldGQXhDbEozT1RWR2JVSlNhbTkzTWk4Mk9UaHdZbGRFUjBaTVJ6QlpRV3h0TlV4cU1qTTVhbUpXZEV4MGNtNXBSSGxhVWt0NVZ6VkVaekZ1VEc5aVNtMXJNblVLVG5saVdVMVBPWFZSZVRsa0NpMHRMUzB0UlU1RUlFTkZVbFJKUmtsRFFWUkZMUzB0TFMwSwpBUElfU0VSVkVSX1VSTD1odHRwczovLzMwNDQyQjdGMzJENEU4RDY0RTU5MkNFRUZCOEJGQzA5LmdyNy5ldS1jZW50cmFsLTEuZWtzLmFtYXpvbmF3cy5jb20KSzhTX0NMVVNURVJfRE5TX0lQPTEwLjEwMC4wLjEwCi9ldGMvZWtzL2Jvb3RzdHJhcC5zaCBsYWtlU2lkZU11dHVhbCAtLWt1YmVsZXQtZXh0cmEtYXJncyAnLS1ub2RlLWxhYmVscz1la3MuYW1hem9uYXdzLmNvbS9zb3VyY2VMYXVuY2hUZW1wbGF0ZVZlcnNpb249MSxhbHBoYS5la3NjdGwuaW8vY2x1c3Rlci1uYW1lPWxha2VTaWRlTXV0dWFsLGFscGhhLmVrc2N0bC5pby9ub2RlZ3JvdXAtbmFtZT1zdGFuZGFyZC13b3JrZXJzLGVrcy5hbWF6b25hd3MuY29tL25vZGVncm91cC1pbWFnZT1hbWktMGMxYmE4OGQxNDUwMjA3YjUsZWtzLmFtYXpvbmF3cy5jb20vY2FwYWNpdHlUeXBlPU9OX0RFTUFORCxla3MuYW1hem9uYXdzLmNvbS9ub2RlZ3JvdXA9c3RhbmRhcmQtd29ya2Vycyxla3MuYW1hem9uYXdzLmNvbS9zb3VyY2VMYXVuY2hUZW1wbGF0ZUlkPWx0LTAxOGNiMTUzZDVhNzRlYmUwIC0tbWF4LXBvZHM9MTcnIC0tYjY0LWNsdXN0ZXItY2EgJEI2NF9DTFVTVEVSX0NBIC0tYXBpc2VydmVyLWVuZHBvaW50ICRBUElfU0VSVkVSX1VSTCAtLWRucy1jbHVzdGVyLWlwICRLOFNfQ0xVU1RFUl9ETlNfSVAgLS11c2UtbWF4LXBvZHMgZmFsc2UKCi0tLy8tLQ=="
+            IamInstanceProfile: "eks-1ec77dff-3d0a-fb46-050b-c4e144157658"
+            Tags: 
+              - 
+                Key: "kubernetes.io/cluster/lakeSideMutual"
+                Value: "owned"
+              - 
+                Key: "k8s.io/cluster-autoscaler/enabled"
+                Value: "true"
+              - 
+                Key: "alpha.eksctl.io/nodegroup-type"
+                Value: "managed"
+              - 
+                Key: "Name"
+                Value: "lakeSideMutual-standard-workers-Node"
+              - 
+                Key: "eks:nodegroup-name"
+                Value: "standard-workers"
+              - 
+                Key: "eks:cluster-name"
+                Value: "lakeSideMutual"
+              - 
+                Key: "alpha.eksctl.io/nodegroup-name"
+                Value: "standard-workers"
+              - 
+                Key: "k8s.io/cluster-autoscaler/lakeSideMutual"
+                Value: "owned"
+            HibernationOptions: 
+                Configured: false
+            CpuOptions: 
+                CoreCount: 1
+                ThreadsPerCore: 2
+            EnclaveOptions: 
+                Enabled: false
+
+    EC2Instance3:
+        Type: "AWS::EC2::Instance"
+        Properties:
+            ImageId: "ami-0c1ba88d1450207b5"
+            InstanceType: "t3.medium"
+            AvailabilityZone: !Sub "${AWS::Region}a"
+            Tenancy: "default"
+            SubnetId: "subnet-0fa30b987f61cc7db"
+            EbsOptimized: false
+            SecurityGroupIds: 
+              - "sg-057c9231ecf7cdfaf"
+              - "sg-057c9231ecf7cdfaf"
+            SourceDestCheck: true
+            BlockDeviceMappings: 
+              - 
+                DeviceName: "/dev/xvda"
+                Ebs: 
+                    Encrypted: false
+                    VolumeSize: 80
+                    SnapshotId: "snap-0c2e1a0b8bcd7a139"
+                    VolumeType: "gp3"
+                    DeleteOnTermination: true
+            UserData: "TUlNRS1WZXJzaW9uOiAxLjAKQ29udGVudC1UeXBlOiBtdWx0aXBhcnQvbWl4ZWQ7IGJvdW5kYXJ5PSIvLyIKCi0tLy8KQ29udGVudC1UeXBlOiB0ZXh0L3gtc2hlbGxzY3JpcHQ7IGNoYXJzZXQ9InVzLWFzY2lpIgojIS9iaW4vYmFzaApzZXQgLWV4CkI2NF9DTFVTVEVSX0NBPUxTMHRMUzFDUlVkSlRpQkRSVkpVU1VaSlEwRlVSUzB0TFMwdENrMUpTVVJDVkVORFFXVXlaMEYzU1VKQlowbEpURVJRWlRNeFMzTnliRkYzUkZGWlNrdHZXa2xvZG1OT1FWRkZURUpSUVhkR1ZFVlVUVUpGUjBFeFZVVUtRWGhOUzJFelZtbGFXRXAxV2xoU2JHTjZRV1ZHZHpCNVRrUkJNRTFxUVhoT1JGRjRUVVJrWVVaM01IcE9SRUV3VFZSbmVFNUVVVEpOUkdSaFRVSlZlQXBGZWtGU1FtZE9Wa0pCVFZSRGJYUXhXVzFXZVdKdFZqQmFXRTEzWjJkRmFVMUJNRWREVTNGSFUwbGlNMFJSUlVKQlVWVkJRVFJKUWtSM1FYZG5aMFZMQ2tGdlNVSkJVVVJ3WjJ0emIyOU1WSGRUTVc1ek4zTlZRMDEzYTFSRWNVWktVVTU0TWt0SlRUSjBRa05YTld0TWVXdGlVR0ZpV1UxblpGVnNZbXhDTW5vS1ZFTk9URkJoT1c5VmQzZFBhR1V6T1UxQlJuVXlkelprYjJ4MmVUSlVOV3RvVlVOUFowMHZVRzQ0VFRsYVdGQTVPWFJETVZwTVRIazNNakZhUTJwRU1ncGFVMUJEY0hoSlNtUnVUMGw1Tkd0aWNXbDBaMmh4VFc1TVRXVk5iV2N3TlROTlZVMXdWMHBwVVhKUk4zTXlSVlJLTmxaWVZHSnFlWEpPVGxKelMyc3pDbXBIUjJaSmVEZHRjRU12TkRsd1JqZGpNek5wVERKdFVrUnFNREJ3S3pOTVozQlhjamxDVWxCamQwSlZWRFE0T0dOclZWaFBaWEY1Y2toMU1rVndLMWdLZVdGU09XOWplaTlYVTFOM2Ewa3hVek5WY2xOSFpFRTBhbEJsVWtoa1ZERnBOM1ZvWVRkTVppOW1NeTlYYkRCNVQwWjJWRGhGZWs1cWVVbHlkRkJMYkFwRE1HMXZVelZsT0d4ek1DdHNhRXRYVTFaQ1prOU5kMlJVVVZOMFFXZE5Ra0ZCUjJwWFZFSllUVUUwUjBFeFZXUkVkMFZDTDNkUlJVRjNTVU53UkVGUUNrSm5UbFpJVWsxQ1FXWTRSVUpVUVVSQlVVZ3ZUVUl3UjBFeFZXUkVaMUZYUWtKU2VqVnNPVE5hZWpOR2FIaGhUa2hsTjJ4RFlqSjJkVlp6VEVONlFWWUtRbWRPVmtoU1JVVkVha0ZOWjJkd2NtUlhTbXhqYlRWc1pFZFdlazFCTUVkRFUzRkhVMGxpTTBSUlJVSkRkMVZCUVRSSlFrRlJRVEZRUTBwQk5VZExXZ3B1YkdOTlJ6YzNkR0prTUdWclowZzVUREZaTTA1NEt6ZFdiVXB1YWtOWU4ydGlSbmxvU0VGRVRWaFNkVFp0VUdwblVXaENaWE5rYzJKUldHeG1WVTVSQ2xSS2JETjRkVTlzUjFsUVIwUkRUVFp3U1VGcVRrVjRTbUZPVjBoWWJrMVdWblJLTDFaaFMxUXdOM0JGTW5wdWRHeDVZVFJrTVhsYWNrTk5kMVJpUVVZS1dYRlRTbGRFZW1GMk9IY3ZORkpaTUhSelVFY3lWbGgzWm01eGNHVk9XRFl2U0RaWVMzUk9aR0kxZURrdk1WcHZRM2ROTURacFpXaHZhMEo0VjBSa05ncHlUVVJwT1dSa2FWTnRWalIxUm1oRFpqYzVhMGRVWm14SlJuZDFOMWxPV21OSWVuTTNRMnczUm00NVltWjVhV2h6WjJacmFrdDFMekpxTVdZcldGQXhDbEozT1RWR2JVSlNhbTkzTWk4Mk9UaHdZbGRFUjBaTVJ6QlpRV3h0TlV4cU1qTTVhbUpXZEV4MGNtNXBSSGxhVWt0NVZ6VkVaekZ1VEc5aVNtMXJNblVLVG5saVdVMVBPWFZSZVRsa0NpMHRMUzB0UlU1RUlFTkZVbFJKUmtsRFFWUkZMUzB0TFMwSwpBUElfU0VSVkVSX1VSTD1odHRwczovLzMwNDQyQjdGMzJENEU4RDY0RTU5MkNFRUZCOEJGQzA5LmdyNy5ldS1jZW50cmFsLTEuZWtzLmFtYXpvbmF3cy5jb20KSzhTX0NMVVNURVJfRE5TX0lQPTEwLjEwMC4wLjEwCi9ldGMvZWtzL2Jvb3RzdHJhcC5zaCBsYWtlU2lkZU11dHVhbCAtLWt1YmVsZXQtZXh0cmEtYXJncyAnLS1ub2RlLWxhYmVscz1la3MuYW1hem9uYXdzLmNvbS9zb3VyY2VMYXVuY2hUZW1wbGF0ZVZlcnNpb249MSxhbHBoYS5la3NjdGwuaW8vY2x1c3Rlci1uYW1lPWxha2VTaWRlTXV0dWFsLGFscGhhLmVrc2N0bC5pby9ub2RlZ3JvdXAtbmFtZT1zdGFuZGFyZC13b3JrZXJzLGVrcy5hbWF6b25hd3MuY29tL25vZGVncm91cC1pbWFnZT1hbWktMGMxYmE4OGQxNDUwMjA3YjUsZWtzLmFtYXpvbmF3cy5jb20vY2FwYWNpdHlUeXBlPU9OX0RFTUFORCxla3MuYW1hem9uYXdzLmNvbS9ub2RlZ3JvdXA9c3RhbmRhcmQtd29ya2Vycyxla3MuYW1hem9uYXdzLmNvbS9zb3VyY2VMYXVuY2hUZW1wbGF0ZUlkPWx0LTAxOGNiMTUzZDVhNzRlYmUwIC0tbWF4LXBvZHM9MTcnIC0tYjY0LWNsdXN0ZXItY2EgJEI2NF9DTFVTVEVSX0NBIC0tYXBpc2VydmVyLWVuZHBvaW50ICRBUElfU0VSVkVSX1VSTCAtLWRucy1jbHVzdGVyLWlwICRLOFNfQ0xVU1RFUl9ETlNfSVAgLS11c2UtbWF4LXBvZHMgZmFsc2UKCi0tLy8tLQ=="
+            IamInstanceProfile: "eks-1ec77dff-3d0a-fb46-050b-c4e144157658"
+            Tags: 
+              - 
+                Key: "alpha.eksctl.io/nodegroup-type"
+                Value: "managed"
+              - 
+                Key: "eks:cluster-name"
+                Value: "lakeSideMutual"
+              - 
+                Key: "k8s.io/cluster-autoscaler/lakeSideMutual"
+                Value: "owned"
+              - 
+                Key: "k8s.io/cluster-autoscaler/enabled"
+                Value: "true"
+              - 
+                Key: "alpha.eksctl.io/nodegroup-name"
+                Value: "standard-workers"
+              - 
+                Key: "kubernetes.io/cluster/lakeSideMutual"
+                Value: "owned"
+              - 
+                Key: "Name"
+                Value: "lakeSideMutual-standard-workers-Node"
+              - 
+                Key: "eks:nodegroup-name"
+                Value: "standard-workers"
+            HibernationOptions: 
+                Configured: false
+            CpuOptions: 
+                CoreCount: 1
+                ThreadsPerCore: 2
+            EnclaveOptions: 
+                Enabled: false
+

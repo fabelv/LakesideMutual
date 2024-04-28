@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customer-core
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: customer-core
+  template:
+    metadata:
+      labels:
+        app: customer-core
+    spec:
+      containers:
+      - name: customer-core
+        image: 613825731605.dkr.ecr.eu-central-1.amazonaws.com/lakeside:customer-core-latest
+        ports:
+        - containerPort: 8080
+

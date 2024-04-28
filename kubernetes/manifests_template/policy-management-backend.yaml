@@ -22,7 +22,7 @@ spec:
               value: http://ab06d343e04c94c958403c48dee2bee3-958230476.eu-central-1.elb.amazonaws.com:9000
             - name: SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_BASE_URL
               value: http://a0053ede0e7384b40a84df5293efe962-252133721.eu-central-1.elb.amazonaws.com:8090
-          image: 613825731605.dkr.ecr.eu-central-1.amazonaws.com/lakeside:policy-management-backend-latest
+          image: ###URL_ECR###:policy-management-backend-latest
           imagePullPolicy: Always
           name: policy-management-backend
           ports:

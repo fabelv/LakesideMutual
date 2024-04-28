@@ -20,7 +20,7 @@ spec:
               value: http://ad824f8bf704542a695eeafac692ea41-1750005900.eu-central-1.elb.amazonaws.com
             - name: ACTIVEMQ_PORT
               value: "61613"
-          image: 613825731605.dkr.ecr.eu-central-1.amazonaws.com/lakeside:risk-management-server-latest
+          image: ###URL_ECR###:risk-management-server-latest
           imagePullPolicy: Always
           name: risk-management-server
           ports:

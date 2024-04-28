@@ -18,7 +18,7 @@ spec:
         - env:
             - name: VUE_APP_POLICY_MANAGEMENT_BACKEND
               value: http://a0053ede0e7384b40a84df5293efe962-252133721.eu-central-1.elb.amazonaws.com:8090
-          image: 613825731605.dkr.ecr.eu-central-1.amazonaws.com/lakeside:policy-management-frontend-latest
+          image: ###URL_ECR###:policy-management-frontend-latest
           imagePullPolicy: Always
           name: policy-management-frontend
           ports:

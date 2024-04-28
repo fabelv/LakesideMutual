@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: customer-self-service-backend
+spec:
+  type: ClusterIP
+  selector:
+    app: customer-self-service-backend
+  ports:
+  - port: 8080
+    targetPort: 8080

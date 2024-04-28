@@ -17,12 +17,12 @@ spec:
       containers:
         - env:
             - name: CUSTOMERCORE_BASEURL
-              value: http://a445b461b08344dfdbc8fee4c29c414f-583188973.eu-central-1.elb.amazonaws.com:8110
+              value: http://###URL_CUSTOMER_CORE###:8110
             - name: SPRING_BOOT_ADMIN_CLIENT_URL
-              value: http://a2368a77f64144347ab530b411469d7c-1420163733.eu-central-1.elb.amazonaws.com:9000
+              value: http://###URL_SPRING_BOOT_ADMIN###:9000
             - name: SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_BASE_URL
-              value: http://ada2055610d9542ae8c198e7707ff4e1-1995119374.eu-central-1.elb.amazonaws.com:8100
-          image: 613825731605.dkr.ecr.eu-central-1.amazonaws.com/lakeside:customer-management-backend-latest
+              value: http://###URL_CUSTOMER_MANAGEMENT_BACKEND###:8100
+          image: ###URL_ECR###:customer-management-backend-latest
           imagePullPolicy: Always
           name: customer-management-backend
           ports:

@@ -17,10 +17,10 @@ spec:
       containers:
         - env:
             - name: REACT_APP_CUSTOMER_SELF_SERVICE_BACKEND
-              value: http://ad968ddb4463942fa8646bebda343800-1712276992.eu-central-1.elb.amazonaws.com:8080
+              value: http://###URL_CUSTOMER_SELF_SERVICE_BACKEND###:8080
             - name: REACT_APP_CUSTOMER_MANAGEMENT_BACKEND
-              value: http://aca41d93ee4774173b4338e8a8142d0c-1689910257.eu-central-1.elb.amazonaws.com:8100
-          image: 613825731605.dkr.ecr.eu-central-1.amazonaws.com/lakeside:customer-management-frontend-latest
+              value: http://###URL_CUSTOMER_MANAGEMENT_BACKEND###:8100
+          image: ###URL_ECR###:customer-management-frontend-latest
           imagePullPolicy: Always
           name: customer-management-frontend
           ports:

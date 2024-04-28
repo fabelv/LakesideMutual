@@ -17,13 +17,13 @@ spec:
       containers:
         - env:
             - name: CUSTOMERCORE_BASEURL
-              value: http://ae5dddc65f68e48169d636f5547461df-1059949939.eu-central-1.elb.amazonaws.com:8110
+              value: http://###URL_CUSTOMER_CORE###:8110
             - name: POLICYMANAGEMENT_TCPBROKERBINDADDRESS
-              value: tcp://ad824f8bf704542a695eeafac692ea41-1750005900.eu-central-1.elb.amazonaws.com:61616
+              value: tcp://###URL_POLICY_MANAGEMENT_BACKEND###:61616
             - name: SPRING_BOOT_ADMIN_CLIENT_URL
-              value: http://ab06d343e04c94c958403c48dee2bee3-958230476.eu-central-1.elb.amazonaws.com:9000
+              value: http://###URL_SPRING_BOOT_ADMIN_CLIENT###:9000
             - name: SPRING_BOOT_ADMIN_CLIENT_INSTANCE_SERVICE_BASE_URL
-              value: http://a1f3db56b94354e9da40b57167402ece-730416898.eu-central-1.elb.amazonaws.com:8080
+              value: http://###URL_CUSTOMER_SELF_SERVICE_BACKEND###:8080
           image: 613825731605.dkr.ecr.eu-central-1.amazonaws.com/lakeside:customer-self-service-backend-latest
           imagePullPolicy: Always
           name: customer-self-service-backend
